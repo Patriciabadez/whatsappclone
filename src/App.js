@@ -7,7 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ChatListItem from './components/ChatListItem';
 
 export default () => {
-  const [chatlist, setchatList] = useState([{}, {}, {}, {}])
+  const [chatlist, setchatList] = useState([{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}])
   return (
     <div className='app-window'>
       <div className="sidebar">
