@@ -9,7 +9,7 @@ import ChatIntro from './components/ChatIntro';
 import ChatWindow from './components/ChatWindow';
 
 export default () => {
-  const [chatlist, setchatList] = useState([
+  const [chatlist, setChatList] = useState([
     {chatId:1, title: "Fulano de Tal",image:'https://www.w3schools.com/w3images/avatar2.png'},
     {chatId:2, title: "Fulano de Tal",image:'https://www.w3schools.com/w3images/avatar2.png'},
     {chatId:3, title: "Fulano de Tal",image:'https://www.w3schools.com/w3images/avatar2.png'},
