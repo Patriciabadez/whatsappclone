@@ -42,6 +42,7 @@
   overflow: hidden;
   transition: all ease 0.3s;
 }
+/* ver aqui */
 .chatWindow--body{
   flex: 1;
   overflow-y: auto;
@@ -90,11 +91,13 @@
   overflow-y: hidden;
   transition: all ease .3s;
 }
+/* nao esta funcionando */
 aside.emoji-picker-react {
   width: auto;
   background: none;  
   background-color: blue;
 }
+/* não esta funcionando */
 .emoji-picker-react .emoji-group:before{
   background: none;
   top: inherit;  
