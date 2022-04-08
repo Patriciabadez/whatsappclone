@@ -1,6 +1,9 @@
-import React, { useState } from 'react'
-import './ChatWindow.css'
+import React, { useState, useEffect, useRef } from 'react'
+// import Api from '../../db/Api';
 import EmojiPicker from 'emoji-picker-react';
+import './ChatWindow.css';
+
+import MessageItem from './MessageItem';
 
 import SearchIcon from '@mui/icons-material/Search';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -10,122 +13,90 @@ import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 import MicIcon from '@mui/icons-material/Mic';
 
-export default () => {
+export default (user, data) => {
+
+    const body = useRef();
 
     let recognition = null;
     let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(SpeechRecognition !== undefined) {
-        recognition = new SpeechRecognition();
 
-    }
+    if (SpeechRecognition !== undefined) recognition = new SpeechRecognition();
 
     const [emojiOpen, setEmojiOpen] = useState(false);
     const [text, setText] = useState('');
     const [listening, setListening] = useState(false);
+    const [list, setList] = useState([]);
+    const [users, setUsers] = useState([]);
 
-    const handleEmojiClick = (e, emojiObject) => {
-        // console.log(emojiObject);
-        setText(text + emojiObject.emoji);
+    useEffect(() => {
+        if (body.current.scrollHeight > body.current.offsetHeight) {
+            body.current.scrollTop = body.current.scrollHeight - body.current.offsetHeight;
+        }
+    }, [list]);
 
-    }
-    const handleOpenEmoji = () => {
-        setEmojiOpen(true);
-    }
-    const handleCloseEmoji = () => {
-        setEmojiOpen(false);
-    }
+    useEffect(() => {
+        setList([]);
+        // let unsub = Api.onChatContent(data.chatId, setList, setUsers);
+        // return unsub;
+    }, [data.chatId]);
+
+    const handleEmojiPicker = (e, emojiObject) => setText(text + emojiObject.emoji);
+    const handleOpenEmojiPicker = () => setEmojiOpen(!emojiOpen);
     const handleMicClick = () => {
-       if(recognition !== null) {
-           
-        recognition.onstart = () => {
-            setListening(true);
-        }
-        recognition.onend = () => {
-            setListening(false);
-        }
-        recognition.onresult = (e) => {
-            setText (e.results[0][0].transcript);
-        }
+        if (recognition === null) return false;
+        recognition.lang = 'pt-br';
+        recognition.onstart = () => setListening(true);
+        recognition.onend = () => setListening(false);
+        recognition.onresult = e => setText(e.results[0][0].transcript);
+
         recognition.start();
-
-       }
-    }
+    };
+    const handleInputKey = e => { if (e.keyCode === 13) handleSendClick() };
     const handleSendClick = () => {
-        setEmojiOpen(false);
-    }
-
+        if (text !== '') {
+            // Api.sendMessage(data, user.id, 'text', text, users);
+            setText('');
+            setEmojiOpen(false);
+        }
+    };
     return (
-        <div className="chatWindow">
-            <div className="chatWindow--header">
-                <div className="chatWindow--headerinfo">
-                    <img className="chatWindow--avatar" src="https://www.w3schools.com/w3images/avatar2.png" alt="" />
-                    <div className="chatWindow--name">Patricia Baldez</div>
+        <div className="ChatWindow">
+            <div className="ChatWindow--header">
+                <div className="ChatWindow--headerinfo">
+                    <img className="chatWindow--avatar" src={data.image} alt="" />
+                    <div className="ChatWindow--name">{data.title}</div>
                 </div>
-                <div className="chatWindow--headerbuttons">
-                    <div className="chatWindow--btn">
-                        <SearchIcon style={{ color: '#919191' }} />
-                    </div>
-                    <div className="chatWindow--btn">
-                        <AttachFileIcon style={{ color: '#919191' }} />
-                    </div>
-                    <div className="chatWindow--btn">
-                        <MoreVertIcon style={{ color: '#919191' }} />
-                    </div>
+
+                <div className="ChatWindow--headerbuttons">
+                    {/* <div className="ChatWindow--btn"><LocalPhoneIcon style={{ color: '#fff' }} /></div> */}
+                    <div className="ChatWindow--btn"><MoreVertIcon style={{ color: '#fff' }} /></div>
                 </div>
+
             </div>
-            <div className="chatWindow--body">
+            <div ref={body} className="ChatWindow--body">
+                {list.map((item, key) => (
+                    <MessageItem key={key} data={item} user={user} />
+                ))}
             </div>
-            <div className="chatWindow--emojiarea"
-                style={{ height: emojiOpen ? '200px' : '0px' }}>
-                <EmojiPicker
-
-                    onEmojiClick={handleEmojiClick}
-                    disableSearchBar
-                    disableSkinTonePicker
-                />
+            <div className="ChatWindow--emojiArea" style={{ height: emojiOpen ? '320px' : '0px' }}>
+                <EmojiPicker disableSearchBar onEmojiClick={handleEmojiPicker} disableSkinTonePicker />
             </div>
-
-            <div className="chatWindow--footer">
-
-                <div className="chatWindow--pre">
-
-                    <div
-                        className="chatWindow--btn"
-                        onClick={handleCloseEmoji}
-                        style={{ width: emojiOpen ? 40 : 0 }}
-                    >
-                        <CloseIcon style={{ color: '#919191' }} />
-                    </div>
-                    <div
-                        className="chatWindow--btn"
-                        onClick={handleOpenEmoji}
-                    >
-                        <InsertEmoticonIcon style={{ color: emojiOpen ? '#009688' : '#919191' }} />
-                    </div>
+            <div className="ChatWindow--footer">
+                <div className="ChatWindow--pre">
+                    <div className="ChatWindow--btn" onClick={handleOpenEmojiPicker} style={{ width: emojiOpen ? '40px' : '0' }}><CloseIcon style={{ color: '#919191' }} /></div>
+                    <div className="ChatWindow--btn" onClick={handleOpenEmojiPicker}><InsertEmoticonIcon style={{ color: emojiOpen ? '#009688' : '#919191' }} /></div>
                 </div>
-                <div className="chatWindow--inputarea">
-                    <input
-                        className="chatWindow--input"
-                        type="text"
-                        placeholder="Digite uma mensagem"
-                        value={text}
-                        onChange={e => setText(e.target.value)}
-                    />
+                <div className="ChatWindow--inputArea">
+                    <input className="ChatWindow--input" placeholder="Digite uma mensagem.." type="text" value={text} onChange={e => { setText(e.target.value) }} onKeyUp={handleInputKey} />
                 </div>
-                <div className="chatWindow--pos">
+                <div className="ChatWindow--pos">
                     {text === '' &&
-                        <div onClick={handleMicClick}className="chatWindow--btn">
-                            <MicIcon style={{ color: listening ? '#126ECE' :'#919191' }} />
-                        </div>
-                    }
-                    {text !== '' &&
-                        <div onClick={handleSendClick} className="chatWindow--btn">
-                            <SendIcon style={{ color: '#919191' }} />
-                        </div>
+                        <div className={`ChatWindow--btn btn-send  ${listening ? 'listening' : ''}`} onClick={handleMicClick}><MicIcon className={listening ? 'listening' : ''} style={{ color: '#fff' }} /></div>
+                    }{text !== '' &&
+                        <div className="ChatWindow--btn btn-send" onClick={handleSendClick}><SendIcon style={{ color: '#fff' }} /></div>
                     }
                 </div>
             </div>
         </div>
-    )
-
+    );
 }
